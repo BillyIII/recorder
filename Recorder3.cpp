@@ -23,6 +23,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
                    LPTSTR    lpCmdLine,
                    int       nCmdShow)
 {
+	// TODO: logging
+
 	MSG msg;
 
 	// Perform application initialization:

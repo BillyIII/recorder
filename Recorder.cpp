@@ -117,7 +117,7 @@ void CRecorder::OnRecordedData(WAVEHDR *pBuffer)
 	catch(const std::exception &ex)
 	{
 		TCHAR buf[1024];
-		swprintf(buf, L"ERR_Data: %S\n", ex.what());
+		_stprintf(buf, _T("ERR_Data: %S\n"), ex.what());
 		OutputDebugString(buf);
 	}
 }
@@ -133,7 +133,7 @@ void CRecorder::OnRecordStopped()
 	catch(const std::exception &ex)
 	{
 		TCHAR buf[1024];
-		swprintf(buf, L"ERR_Done: %S\n", ex.what());
+		_stprintf(buf, _T("ERR_Done: %S\n"), ex.what());
 		OutputDebugString(buf);
 	}
 }
