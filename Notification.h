@@ -1,0 +1,3 @@
+
+bool InitPhoneNotification();
+bool StopPhoneNotification();
