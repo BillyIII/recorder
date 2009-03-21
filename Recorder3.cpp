@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 #include "Recorder3.h"
-#include "Notification.h"
 #include "Recorder.h"
+#include "Application.h"
 
 
 #define MAX_LOADSTRING 100
@@ -33,7 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	if(!InitPhoneNotification())
+	if(!StartApplication())
 	{
 		return FALSE;
 	}
@@ -47,7 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		}
 	}
 
-	if(!StopPhoneNotification())
+	if(!StopApplication())
 	{
 		return FALSE;
 	}

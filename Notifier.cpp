@@ -2,7 +2,6 @@
 #include "Notifier.h"
 
 CNotifier::CNotifier(void)
-: m_strSavePath(_T("\\"))
 {
 	try
 	{
@@ -17,17 +16,10 @@ CNotifier::CNotifier(void)
 
 		m_psnCallTalking = new CStateNotifyByName(SN_PHONECALLTALKING);
 		m_psnCallTalking->SetCallback(CallTalkingCallback, reinterpret_cast<DWORD>(this));
-
-		m_pRecorder = new CRecorder();
 	}
 	catch(...)
 	{
 		CancelNotifications();
-
-		if(m_pRecorder)
-		{
-			delete m_pRecorder;
-		}
 
 		throw;
 	}
@@ -36,28 +28,30 @@ CNotifier::CNotifier(void)
 CNotifier::~CNotifier(void)
 {
 	CancelNotifications();
-
-	if(m_pRecorder)
-	{
-		delete m_pRecorder;
-	}
 }
 
 void CNotifier::CancelNotifications()
 {
-	delete g_psnTalkingCallerNumber;
-	delete g_psnTalkingCallerName;
-	delete g_psnTalkingCallerContact;
-	delete g_psnCallTalking;
+	delete m_psnTalkingCallerNumber;
+	delete m_psnTalkingCallerName;
+	delete m_psnTalkingCallerContact;
+	delete m_psnCallTalking;
 }
 
 void CNotifier::OnPhoneTalkStarted()
 {
-	m_pRecorder->Record(GetSaveFileName(), 
+	foreach(ListenersListIter, i, m_pListeners)
+	{
+		(*i)->OnPhoneTalkStarted();
+	}
 }
 
 void CNotifier::OnPhoneTalkFinished()
 {
+	foreach(ListenersListIter, i, m_pListeners)
+	{
+		(*i)->OnPhoneTalkFinished();
+	}
 }
 
 void CNotifier::CallTalkingCallback(HREGNOTIFY hNotify, DWORD dwUserData, const PBYTE pData, const UINT cbData)
@@ -79,15 +73,39 @@ void CNotifier::CallTalkingCallback(HREGNOTIFY hNotify, DWORD dwUserData, const 
   }
 }
 
-TCHAR *CNotifier::GetSaveFileName()
+bool CNotifier::FindListener(INotifListener *pListener, ListenersListIter *pIter)
 {
-	TCHAR buf[512]; // should be enough for mobile
-	SYSTEMTIME t;
+	foreach(ListenersListIter, i, m_pListeners)
+	{
+		if (*i == pListener)
+		{
+			if(pIter)
+			{
+				*pIter = i;
+			}
+			return true;
+		}
+	}
+	return false;
+}
 
-	GetLocalTime(&t);
-	_stprintf(buf, _T("%s\\%02d%02d%02d-%02d%02d%02d.wav"),
-		m_strSavePath, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+void CNotifier::AddListener(INotifListener *pListener)
+{
+	if(HasListener(pListener))
+		throw CArgumentException(_T("pListener"), "Listener is already registered.");
+	m_pListeners.push_back(pListener);
+}
 
-	return buf;
+bool CNotifier::HasListener(INotifListener *pListener)
+{
+	return FindListener(pListener, NULL);
+}
+
+void CNotifier::RemoveListener(INotifListener *pListener)
+{
+	ListenersListIter i;
+	if(!FindListener(pListener, &i))
+		throw CArgumentException(_T("pListener"), "Listener is not registered.");
+	m_pListeners.erase(i);
 }
 

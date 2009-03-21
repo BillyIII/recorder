@@ -63,3 +63,13 @@
 #include <snapi.h>
 
 #include <stdexcept>
+#include <vector>
+
+#ifndef _UNICODE
+typedef std::string tstring;
+#else
+typedef std::wstring tstring;
+#endif
+
+#define foreach(type, name, list) \
+	for(type name = list.begin(); name != list.end(); name ++)

@@ -20,6 +20,17 @@ public:
 		: std::exception(pszMessage) {}
 };
 
+class CArgumentException : public std::exception
+{
+public:
+	tstring	m_strArgument;
+public:
+	CArgumentException(const TCHAR *pszArgument, const char* pszMessage = "Invalid argument.")
+		: std::exception(pszMessage)
+		, m_strArgument(pszArgument)
+	{}
+};
+
 class CSystemException : public std::exception
 {
 private:

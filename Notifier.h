@@ -1,13 +1,11 @@
 #pragma once
 
 #include "StateNotify.h"
-#include "Recorder.h"
+#include "Plugin.h"
+#include "Exceptions.h"
 
-#ifndef _UNICODE
-typedef std::string tstring;
-#else
-typedef std::wstring tstring;
-#endif
+typedef std::vector<INotifListener*> ListenersList;
+typedef std::vector<INotifListener*>::iterator ListenersListIter;
 
 class CNotifier
 {
@@ -18,10 +16,7 @@ private:
 	CStateNotify	*m_psnTalkingCallerContact;
 	CStateNotify	*m_psnCallTalking;
 
-	// sound recorder
-	CRecorder		*m_pRecorder;
-
-	tstring			m_strSavePath;
+	ListenersList	m_pListeners;
 
 private:
 	static void CallTalkingCallback(HREGNOTIFY hNotify, DWORD dwUserData, const PBYTE pData, const UINT cbData);
@@ -30,12 +25,13 @@ private:
 	void OnPhoneTalkStarted();
 	void OnPhoneTalkFinished();
 
-	TCHAR *GetSaveFileName();
+	bool FindListener(INotifListener *pListener, ListenersListIter *pIter);
 
 public:
 	CNotifier(void);
 	~CNotifier(void);
 
-	TCHAR *GetSavePath() {return m_strSavePath;}
-	void SetSavePath(TCHAR *pstrPath) {m_strSavePath = pstrPath;}
+	void AddListener(INotifListener *pListener);
+	bool HasListener(INotifListener *pListener);
+	void RemoveListener(INotifListener *pListener);
 };

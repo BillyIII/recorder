@@ -97,7 +97,6 @@ void PhoneCallTalkingCallback(HREGNOTIFY hNotify, DWORD dwUserData, const PBYTE 
 
   if (state & SN_PHONECALLTALKING_BITMASK)
   {
-	  g_pRecorder->Record(
   }
   else
   {
