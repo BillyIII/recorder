@@ -138,7 +138,7 @@ void CRecorder::OnRecordStopped()
 	}
 }
 
-void CRecorder::Record(TCHAR *pszFile, WORD dwSampleRate, WORD dwBitsPerSample)
+void CRecorder::Record(const TCHAR *pszFile, WORD dwSampleRate, WORD dwBitsPerSample)
 {
 	if(RecState_Stopped != GetState())
 	{
@@ -242,7 +242,7 @@ void CRecorder::Stop()
 			waveInClose(m_hDevice) );
 }
 
-void CRecorder::PrepareWaveFile(TCHAR *pszFile)
+void CRecorder::PrepareWaveFile(const TCHAR *pszFile)
 {
 	DWORD t;
 

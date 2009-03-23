@@ -50,8 +50,14 @@ void CNotifier::OnPhoneTalkFinished()
 {
 	foreach(ListenersListIter, i, m_pListeners)
 	{
-		(*i)->OnPhoneTalkFinished();
+		(*i)->OnPhoneTalkFinished(
+			m_psnTalkingCallerName->GetAsString(),
+			m_psnTalkingCallerNumber->GetAsString() );
 	}
+
+	m_psnTalkingCallerNumber->ClearStateData();
+	m_psnTalkingCallerName->ClearStateData();
+	m_psnTalkingCallerContact->ClearStateData();
 }
 
 void CNotifier::CallTalkingCallback(HREGNOTIFY hNotify, DWORD dwUserData, const PBYTE pData, const UINT cbData)

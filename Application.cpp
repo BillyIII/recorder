@@ -7,41 +7,59 @@ IPlugin *g_BuiltInPlugins[] =
 	NULL
 };
 
-PluginsList g_Plugins;
-CNotifier	*g_pNotifier;
-CRegConfig	*g_pConfig;
-
-void AddPlugin(IPlugin *pp)
+CApplication::CApplication()
+: m_pNotifier(NULL)
+, m_pConfig(NULL)
 {
-	INotifListener *plisten;
+	Start();
+}
 
-	g_Plugins.push_back(pp);
-
-	g_pConfig->SetPlugin(pp->GetName());
-	pp->LoadConfig(g_pConfig);
-
-	if(plisten = pp->GetListener())
+CApplication::~CApplication()
+{
+	try
 	{
-		g_pNotifier->AddListener(plisten);
+		Stop();
+	}
+	catch(...)
+	{
+		// TODO: log error
 	}
 }
 
-void RemovePlugin(IPlugin *pp)
+void CApplication::AddPlugin(IPlugin *pp)
 {
 	INotifListener *plisten;
 
-	g_pConfig->SetPlugin(pp->GetName());
-	pp->SaveConfig(g_pConfig);
+	m_pConfig->SetPlugin(pp->GetName());
+	if(m_pConfig->GetIntValue(APP_CFG_PLUGINENABLED, 1))
+	{
+		m_Plugins.push_back(pp);
+
+		pp->LoadConfig(m_pConfig);
+
+		if(plisten = pp->GetListener())
+		{
+			m_pNotifier->AddListener(plisten);
+		}
+	}
+}
+
+void CApplication::RemovePlugin(IPlugin *pp)
+{
+	INotifListener *plisten;
+
+	m_pConfig->SetPlugin(pp->GetName());
+	pp->SaveConfig(m_pConfig);
 
 	if(plisten = pp->GetListener())
 	{
-		g_pNotifier->RemoveListener(plisten);
+		m_pNotifier->RemoveListener(plisten);
 	}
 
 	pp->Unload();
 }
 
-void LoadPlugins()
+void CApplication::LoadPlugins()
 {
 	IPlugin **pp = g_BuiltInPlugins;
 	while(*pp)
@@ -49,49 +67,97 @@ void LoadPlugins()
 		AddPlugin(*pp);
 		pp ++;
 	}
+
+	tstring plgdir, plgmask, path;
+	WIN32_FIND_DATA fd;
+	HANDLE hfind;
+	HINSTANCE hlib;
+	IPlugin *pplg;
+
+	m_pConfig->SetPlugin(APP_CFG_PLUGINNAME);
+
+	plgdir = m_pConfig->GetStringValue(APP_CFG_PLUGINSPATH, APP_DEFAULT_PLUGINSPATH);
+	plgmask = m_pConfig->GetStringValue(APP_CFG_PLUGINSMASK, APP_DEFAULT_PLUGINSMASK);
+	path = plgdir;
+	path += plgmask;
+	hfind = FindFirstFile(path.c_str(), &fd);
+	if(INVALID_HANDLE_VALUE != hfind)
+	{
+		do
+		{
+			path.resize(plgdir.size());
+			path += fd.cFileName;
+
+			hlib = LoadLibrary(path.c_str());
+			if(NULL == hlib)
+			{
+				// TODO: log error
+				continue;
+			}
+
+			GETPLUGINPROC proc =
+				reinterpret_cast<GETPLUGINPROC>(GetProcAddress(hlib, PLUGIN_PROC_NAME));
+			if(NULL == proc)
+			{
+				// TODO: log error
+				FreeLibrary(hlib);
+				continue;
+			}
+
+			pplg = proc();
+			if(NULL == pplg)
+			{
+				// TODO: log error
+				FreeLibrary(hlib);
+				continue;
+			}
+
+			AddPlugin(pplg);
+			m_PluginLibraries.push_back(hlib);
+		}
+		while(FindNextFile(hfind, &fd));
+
+		FindClose(hfind);
+	}
 }
 
-void UnloadPlugins()
+void CApplication::UnloadPlugins()
 {
-	foreach(PluginsListIter, i, g_Plugins)
+	foreach(PluginsListIter, i, m_Plugins)
 	{
 		RemovePlugin(*i);
 	}
-	g_Plugins.clear();
+	m_Plugins.clear();
+
+	foreach(std::vector<HMODULE>::const_iterator, i, m_PluginLibraries)
+	{
+		FreeLibrary(*i);
+	}
+	m_PluginLibraries.clear();
 }
 
-bool StartApplication()
+void CApplication::Start()
 {
 	try
 	{
-		g_pNotifier = new CNotifier();
-		g_pConfig = new CRegConfig();
+		m_pNotifier = new CNotifier();
+		m_pConfig = new CRegConfig();
 
 		LoadPlugins();
 	}
 	catch(...)
 	{
-		return false;
+		Stop();
+		throw;
 	}
-
-	return true;
 }
 
-bool StopApplication()
+void CApplication::Stop()
 {
-	try
-	{
-		UnloadPlugins();
+	UnloadPlugins();
 
-		delete g_pNotifier;
-		delete g_pConfig;
-	}
-	catch(...)
-	{
-		return false;
-	}
-
-	return true;
+	delete m_pNotifier;
+	delete m_pConfig;
 }
 
 

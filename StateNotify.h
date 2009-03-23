@@ -28,6 +28,8 @@ public:
 	DWORD GetCallbackUserData() {return m_dwUserData;}
 	void SetCallback(REGISTRYNOTIFYCALLBACK cb, DWORD dw) {m_Callback = cb; m_dwUserData = dw;}
 
+	const TCHAR *GetAsString() {return reinterpret_cast<const TCHAR *>(m_pStateData);}
+
 	BYTE *GetStateData() {return m_pStateData;}
 	UINT GetStateDataSize() {return m_cbStateDataSize;}
 	void KeepStateData(bool bKeep) {m_bKeepStateData = bKeep;}

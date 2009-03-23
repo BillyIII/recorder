@@ -4,18 +4,18 @@
 __interface INotifListener
 {
 	void OnPhoneTalkStarted();
-	void OnPhoneTalkFinished();
+	void OnPhoneTalkFinished(const TCHAR *pszName, const TCHAR *pszNumber);
 };
 
 __interface IConfig
 {
-	int GetIntValue(TCHAR* Name);
-	float GetRealValue(TCHAR* Name);
-	tstring GetStringValue(TCHAR* Name);
+	int GetIntValue(TCHAR* Name, int nDefaultValue);
+	float GetRealValue(TCHAR* Name, float fDefaultValue);
+	tstring GetStringValue(TCHAR* Name, const TCHAR* strDefaultValue);
 
 	void SetValue(TCHAR* Name, int nValue);
 	void SetValue(TCHAR* Name, float fValue);
-	void SetValue(TCHAR* Name, TCHAR* strValue);
+	void SetValue(TCHAR* Name, const TCHAR* strValue);
 };
 
 __interface IPlugin
@@ -32,6 +32,8 @@ __interface IPlugin
 	void Unload();
 };
 
+// External plugins are dll's exporting "GetPlugin" method
+#define PLUGIN_PROC_NAME _T("GetPlugin")
 typedef IPlugin* (*GETPLUGINPROC)();
 
 

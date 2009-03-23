@@ -5,6 +5,7 @@
 #include "Recorder3.h"
 #include "Recorder.h"
 #include "Application.h"
+#include "Log.h"
 
 
 #define MAX_LOADSTRING 100
@@ -12,6 +13,7 @@
 // Global Variables:
 HINSTANCE			g_hInst;			// current instance
 HWND				g_hWndMenuBar;		// menu bar handle
+CApplication		*g_pApplication;
 
 // Forward declarations of functions included in this code module:
 ATOM			MyRegisterClass(HINSTANCE, LPTSTR);
@@ -23,7 +25,20 @@ int WINAPI WinMain(HINSTANCE hInstance,
                    LPTSTR    lpCmdLine,
                    int       nCmdShow)
 {
-	// TODO: logging
+	if(!InstallCrashHandler())
+	{
+		InvokeCrashHandler();
+		return 99;
+	}
+
+	if(!LogStart())
+	{
+		InvokeCrashHandler();
+		return 99;
+	}
+
+	LogMessageFmt(LogLevel_Info, _T(__FUNCTION__), _T("number: %d, string: %s"),
+		123, _T("hi there!"));
 
 	MSG msg;
 
@@ -33,9 +48,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	if(!StartApplication())
+	try
 	{
-		return FALSE;
+		g_pApplication = new CApplication();
+	}
+	catch(...)
+	{
+		InvokeCrashHandler();
+		return 99;
 	}
 
 	// Main message loop:
@@ -47,10 +67,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		}
 	}
 
-	if(!StopApplication())
+	try
 	{
-		return FALSE;
+		delete g_pApplication;
 	}
+	catch(...)
+	{
+		// TODO: log error
+		return 99;
+	}
+
+	LogStop();
 
 	return (int) msg.wParam;
 }

@@ -2,7 +2,7 @@
 #include "TalkRecorder.h"
 
 CTalkRecorder::CTalkRecorder(void)
-: m_strSavePath(_T("\\"))
+: m_strSavePath(_T("\\Storage Card"))
 , m_nSampleRate(44100)
 , m_nBitsPerSample(16)
 {
@@ -14,13 +14,22 @@ CTalkRecorder::~CTalkRecorder(void)
 	delete m_pRecorder;
 }
 
-void CTalkRecorder::GetSaveFileName(TCHAR *pBuffer)
+tstring CTalkRecorder::GetSaveFileName(const TCHAR *pszCaller)
 {
 	SYSTEMTIME t;
+	TCHAR buf[412];
+
+	if(!pszCaller)
+	{
+		pszCaller = _T("Anonymous");
+	}
 
 	GetLocalTime(&t);
-	_stprintf(pBuffer, _T("%s\\%02d%02d%02d-%02d%02d%02d.wav"),
-		m_strSavePath, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+	_stprintf(buf, _T("%s\\%02d%02d%02d-%02d%02d%02d-%s.wav"),
+		m_strSavePath.c_str(), t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond,
+		pszCaller);
+
+	return tstring(buf);
 }
 
 // -------------------------------
@@ -35,9 +44,9 @@ void CTalkRecorder::LoadConfig(IConfig *pConfig)
 {
 	if(pConfig)
 	{
-		m_strSavePath = pConfig->GetStringValue(TALKREC_CFG_SAVEPATH);
-		m_nSampleRate = pConfig->GetIntValue(TALKREC_CFG_SAMPLERATE);
-		m_nBitsPerSample = pConfig->GetIntValue(TALKREC_CFG_BITSPERSAMPLE);
+		m_strSavePath = pConfig->GetStringValue(TALKREC_CFG_SAVEPATH, m_strSavePath.c_str());
+		m_nSampleRate = pConfig->GetIntValue(TALKREC_CFG_SAMPLERATE, m_nSampleRate);
+		m_nBitsPerSample = pConfig->GetIntValue(TALKREC_CFG_BITSPERSAMPLE, m_nBitsPerSample);
 	}
 }
 
@@ -67,14 +76,24 @@ void CTalkRecorder::Unload()
 void CTalkRecorder::OnPhoneTalkStarted()
 {
 	// TODO: check buffer size
-	TCHAR filename[512];
-	GetSaveFileName(filename);
-	m_pRecorder->Record(filename, m_nSampleRate, m_nBitsPerSample);
+	//TCHAR filename[512];
+	m_strSavedFileName = GetSaveFileName(NULL);
+	//m_strSavedFileName = tstring(filename);
+	m_pRecorder->Record(m_strSavedFileName.c_str(), m_nSampleRate, m_nBitsPerSample);
 }
 
-void CTalkRecorder::OnPhoneTalkFinished()
+void CTalkRecorder::OnPhoneTalkFinished(const TCHAR *pszName, const TCHAR *pszNumber)
 {
 	m_pRecorder->Stop();
+
+	const TCHAR *pszname = NULL;
+	pszname = pszNumber ? pszNumber : pszname;
+	pszname = pszName ? pszName : pszname;
+
+	if(pszname)
+	{
+		MoveFile(m_strSavedFileName.c_str(), GetSaveFileName(pszname).c_str());
+	}
 }
 
 

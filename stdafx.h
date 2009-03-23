@@ -64,12 +64,17 @@
 
 #include <stdexcept>
 #include <vector>
+#include <strsafe.h>
 
+/*
 #ifndef _UNICODE
 typedef std::string tstring;
 #else
 typedef std::wstring tstring;
 #endif
+*/
+typedef std::basic_string<TCHAR, std::char_traits<TCHAR>, std::allocator<TCHAR> >
+	tstring;
 
 #define foreach(type, name, list) \
 	for(type name = list.begin(); name != list.end(); name ++)

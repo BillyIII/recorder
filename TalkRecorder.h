@@ -15,11 +15,12 @@ private:
 	CRecorder	*m_pRecorder;
 
 	tstring		m_strSavePath;
+	tstring		m_strSavedFileName;
 	int			m_nSampleRate;
 	int			m_nBitsPerSample;
 
 private:
-	void GetSaveFileName(TCHAR *pBuffer);
+	tstring GetSaveFileName(const TCHAR *pszCaller = NULL);
 
 public:
 	CTalkRecorder(void);
@@ -41,5 +42,5 @@ public:
 	//    interface INotifListener
 	// -------------------------------
 	void OnPhoneTalkStarted();
-	void OnPhoneTalkFinished();
+	void OnPhoneTalkFinished(const TCHAR *pszName, const TCHAR *pszNumber);
 };

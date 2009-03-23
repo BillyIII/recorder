@@ -3,7 +3,7 @@
 #include "Plugin.h"
 #include "Exceptions.h"
 
-#define REGCONFIG_PLUGINSPATH	_T("Software\\Recorder3\\Plugins\\")
+#define REGCONFIG_PLUGINSPATH	_T("Software\\Recorder3\\")
 
 class CRegConfig : public IConfig
 {
@@ -20,11 +20,11 @@ public:
 	// -------------------------------
 	//       interface IConfig
 	// -------------------------------
-	int GetIntValue(TCHAR* Name);
-	float GetRealValue(TCHAR* Name);
-	tstring GetStringValue(TCHAR* Name);
+	int GetIntValue(TCHAR* Name, int nDefaultValue);
+	float GetRealValue(TCHAR* Name, float fDefaultValue);
+	tstring GetStringValue(TCHAR* Name, const TCHAR* strDefaultValue);
 
 	void SetValue(TCHAR* Name, int nValue);
 	void SetValue(TCHAR* Name, float fValue);
-	void SetValue(TCHAR* Name, TCHAR* strValue);
+	void SetValue(TCHAR* Name, const TCHAR* strValue);
 };

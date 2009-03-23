@@ -38,7 +38,7 @@ void CRegConfig::CloseKey()
 	}
 }
 
-int CRegConfig::GetIntValue(TCHAR* Name)
+int CRegConfig::GetIntValue(TCHAR* Name, int nDefaultValue)
 {
 	DWORD err, type, size;
 	int value;
@@ -48,7 +48,8 @@ int CRegConfig::GetIntValue(TCHAR* Name)
 		&type, reinterpret_cast<LPBYTE>(&value), &size);
 	if(ERROR_SUCCESS != err)
 	{
-		throw CSystemException(err, "Failed to query configuration value.");
+		//throw CSystemException(err, "Failed to query configuration value.");
+		return nDefaultValue;
 	}
 
 	if(type != REG_DWORD)
@@ -64,7 +65,7 @@ int CRegConfig::GetIntValue(TCHAR* Name)
 	return value;
 }
 
-float CRegConfig::GetRealValue(TCHAR* Name)
+float CRegConfig::GetRealValue(TCHAR* Name, float fDefaultValue)
 {
 	DWORD err, type, size;
 	float value;
@@ -74,7 +75,8 @@ float CRegConfig::GetRealValue(TCHAR* Name)
 		&type, reinterpret_cast<LPBYTE>(&value), &size);
 	if(ERROR_SUCCESS != err)
 	{
-		throw CSystemException(err, "Failed to query configuration value.");
+		//throw CSystemException(err, "Failed to query configuration value.");
+		return fDefaultValue;
 	}
 
 	if(type != REG_DWORD)
@@ -90,7 +92,7 @@ float CRegConfig::GetRealValue(TCHAR* Name)
 	return value;
 }
 
-tstring CRegConfig::GetStringValue(TCHAR* Name)
+tstring CRegConfig::GetStringValue(TCHAR* Name, const TCHAR* strDefaultValue)
 {
 	DWORD err, type, size;
 	TCHAR *pbuffer;
@@ -100,7 +102,8 @@ tstring CRegConfig::GetStringValue(TCHAR* Name)
 		&type, NULL, &size);
 	if(ERROR_SUCCESS != err)
 	{
-		throw CSystemException(err, "Failed to query configuration value.");
+		//throw CSystemException(err, "Failed to query configuration value.");
+		return tstring(strDefaultValue);
 	}
 
 	if(type != REG_SZ)
@@ -143,12 +146,12 @@ void CRegConfig::SetValue(TCHAR* Name, float fValue)
 	}
 }
 
-void CRegConfig::SetValue(TCHAR* Name, TCHAR* strValue)
+void CRegConfig::SetValue(TCHAR* Name, const TCHAR* strValue)
 {
 	DWORD err;
 
 	err = RegSetValueEx(m_hKey, Name, NULL,
-		REG_SZ, reinterpret_cast<LPBYTE>(strValue),
+		REG_SZ, reinterpret_cast<const BYTE*>(strValue),
 		(_tcslen(strValue) + 1) * sizeof(TCHAR));
 	if(ERROR_SUCCESS != err)
 	{

@@ -53,12 +53,13 @@ struct wavFullHeader
 #pragma pack(pop)
 
 // fixes bug in Stop() method
+// makes it wait until all buffers are filled and released
 #define RECORDER_FORCEDONE_FIX
 
 #define RECORDER_NUM_BUFFERS	2
 // record buffer size in seconds
 // if RECORDER_FORCEDONE_FIX is enabled, 
-//  buffer is returned _only_ after it is filled)
+//  buffer is returned _only_ after it is filled
 #define RECORDER_BUFFERED_TIME	0.5f
 // reasonable timeout for mutexes
 #define RECORDER_MAXIMAL_WAIT	25000
@@ -112,7 +113,7 @@ private:
 	void OnRecordedData(WAVEHDR *pBuffer);
 	void OnRecordStopped();
 
-	void PrepareWaveFile(TCHAR *pszFile);
+	void PrepareWaveFile(const TCHAR *pszFile);
 	void FinalizeWaveFile();
 
 	// getter/setter for recorder state
@@ -123,7 +124,7 @@ public:
 	CRecorder(void);
 	~CRecorder(void);
 
-	void Record(TCHAR *pszFile, WORD dwSampleRate, WORD dwBitsPerSample);
+	void Record(const TCHAR *pszFile, WORD dwSampleRate, WORD dwBitsPerSample);
 	void Stop();
 };
 
